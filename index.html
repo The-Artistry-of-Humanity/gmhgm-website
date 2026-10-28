@@ -31,6 +31,13 @@
 
   <body>
     <div id="root"></div>
+    <!-- Netlify Forms detects these at deploy; the visible forms are rendered by React. -->
+    <form name="coaching-enquiry" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input name="bot-field" /><input name="name" /><input name="email" /><input name="location" />
+      <textarea name="reason"></textarea><input name="packageInterest" /><input name="weeklyTime" /><textarea name="notes"></textarea>
+    </form>
+    <form name="unsubscribe" data-netlify="true" hidden><input name="token" /></form>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

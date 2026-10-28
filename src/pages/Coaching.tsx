@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { z } from "zod";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 import { Input } from "@/components/ui/input";
@@ -771,8 +770,13 @@ const ContactSection = () => {
     setSubmitting(true);
     const d = result.data;
     try {
-      const { error } = await supabase.functions.invoke("submit-coaching-enquiry", {
-        body: {
+      // Netlify Forms (since the move off Lovable, Oct 2026). The hidden copy of
+      // this form in index.html lets Netlify detect it at deploy.
+      const res = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          "form-name": "coaching-enquiry",
           name: d.name,
           email: d.email,
           location: d.location,
@@ -780,9 +784,9 @@ const ContactSection = () => {
           packageInterest: d.packageInterest,
           weeklyTime: d.weeklyTime,
           notes: d.notes || "",
-        },
+        }).toString(),
       });
-      if (error) throw error;
+      if (!res.ok) throw new Error(`Form post failed: ${res.status}`);
 
       toast({
         title: "Message received",

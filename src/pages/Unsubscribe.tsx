@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 type State = "loading" | "valid" | "already" | "invalid" | "submitting" | "success" | "error";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 const Unsubscribe = () => {
   useDocumentTitle("Unsubscribe — GMHGM");
@@ -15,39 +11,23 @@ const Unsubscribe = () => {
   const token = params.get("token");
   const [state, setState] = useState<State>("loading");
 
+  // Links in emails sent before the move off Lovable carry a token. Any token is
+  // accepted; the request is recorded with Netlify Forms ("unsubscribe") and the
+  // address is suppressed by hand from there.
   useEffect(() => {
-    if (!token) {
-      setState("invalid");
-      return;
-    }
-    (async () => {
-      try {
-        const res = await fetch(
-          `${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
-          { headers: { apikey: SUPABASE_ANON_KEY } }
-        );
-        const data = await res.json();
-        if (!res.ok) return setState("invalid");
-        if (data.valid === false && data.reason === "already_unsubscribed") return setState("already");
-        if (data.valid === true) return setState("valid");
-        setState("invalid");
-      } catch {
-        setState("invalid");
-      }
-    })();
+    setState(token ? "valid" : "invalid");
   }, [token]);
 
   const handleConfirm = async () => {
     if (!token) return;
     setState("submitting");
     try {
-      const { data, error } = await supabase.functions.invoke("handle-email-unsubscribe", {
-        body: { token },
+      const res = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ "form-name": "unsubscribe", token }).toString(),
       });
-      if (error) return setState("error");
-      if (data?.success) return setState("success");
-      if (data?.reason === "already_unsubscribed") return setState("already");
-      setState("error");
+      setState(res.ok ? "success" : "error");
     } catch {
       setState("error");
     }
