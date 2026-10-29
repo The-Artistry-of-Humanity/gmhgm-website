@@ -9,7 +9,7 @@ export const handler = async (event) => {
   const key = process.env.RESEND_API_KEY;
   const d = payload.data || {};
   if (!key || !d.email) return { statusCode: 200 };
-  const from = process.env.EMAIL_FROM || 'GMHGM <noreply@notify.gmhgm.com>';
+  const from = process.env.EMAIL_FROM || 'GMHGM <ian@gmhgm.com>';
   const esc = (t) => String(t || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const name = (d.name || '').trim();
   const html = `<div style="font-family:Inter,Arial,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;max-width:520px">
